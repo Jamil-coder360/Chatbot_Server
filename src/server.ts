@@ -1,25 +1,48 @@
+import type { Server } from "http";
+import colors from "colors";
 import app from "./app";
 import { config } from "./app/config";
 import prisma from "./app/config/prisma";
-// import config from "./config";
-// import prisma from "./config/prisma";
 
-const startServer = async () => {
-  try {
-    // Connect MongoDB
-    await prisma.$connect();
+let server: Server | undefined;
 
-    console.log("MongoDB connected successfully!");
-
-    // Start Express server
-    app.listen(config.port, () => {
-      console.log(`Server running on port ${config.port}`);
+async function main() {
+  server = app.listen(Number(config.port), config.ip, () => {
+    console.log(
+      colors.italic.green.bold(
+        `Server is running on http://${config.ip}:${config.port}`,
+      ),
+    );
+  });
+  prisma
+    .$connect()
+    .then(() => {
+      console.log("Connected to MongoDB successfully!");
+    })
+    .catch((err) => {
+      console.error(" Database connection issue:", err.message);
     });
-  } catch (error) {
-    console.error("Failed to start server:", error);
-    await prisma.$disconnect();
-    process.exit(1);
-  }
-};
+}
 
-startServer();
+main().catch((err) => {
+  console.error("Error starting server:", err);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled rejection:", err);
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+  }
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception:", err);
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+  }
+});
