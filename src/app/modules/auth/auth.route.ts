@@ -10,16 +10,18 @@ router.post('/login', authController.login);
 
 // router.post('/refresh-token', authController.refreshToken);
 
+
 router.patch(
-  '/change-password',
+  "/change-password",
   auth(
     Role.SUPERADMIN,
     Role.SubADMIN,
     Role.ADMIN,
-    Role.USER,
+    Role.USER
   ),
-  authController.changePassword,
+  authController.changePassword
 );
+
 
 // router.patch('/forgot-password', authControllers.forgotPassword);
 // router.patch('/reset-password', authControllers.resetPassword);

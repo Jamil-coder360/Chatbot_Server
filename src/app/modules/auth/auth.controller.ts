@@ -1,4 +1,5 @@
 const httpStatus = require("http-status").default;
+import { Request, Response } from "express";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import authService from "./auth.service";
@@ -13,18 +14,21 @@ const login = catchAsync(async (req, res) => {
     data: result,
   });
 });
-
-const changePassword = catchAsync(async (req, res)=>{
-  const result = await authService.changePassword(req.user?.id, req.body);
-
-  sendResponse(res,{
-    success:true,
-    statusCode:httpStatus.OK,
-    message:"Password changed successfully",
-    data: result,
-
-  });
-});
+const changePassword = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await authService.changePassword(
+      req.user!.id,
+      req.body
+    );
+ 
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Password changed successfully",
+      data: result,
+    });
+  }
+);
 const forgatePassword = catchAsync(async (req, res)=>{
   const result = await authService.forgatePassword(req.body);
 

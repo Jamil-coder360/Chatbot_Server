@@ -114,49 +114,72 @@ const changePassword = async (
     oldPassword: string;
     newPassword: string;
     confirmPassword: string;
-  },
+  }
 ) => {
   const user = await prisma.user.findUnique({
-    where: {
-      id: id,
-    },
+    where: { id },
   });
 
-  if (!user) throw new AppError(httpStatus.BAD_REQUEST, "user not found");
+  if (!user)
+    throw new AppError(httpStatus.BAD_REQUEST, "User not found");
+
   if (user.isDeleted)
-    throw new AppError(httpStatus.BAD_REQUEST, "this user account is delated ");
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "This user account is deleted"
+    );
+
   if (user.status === "INACTIVE")
-    throw new AppError(httpStatus.BAD_REQUEST, "this user account is inactive");
-  if (isPasswordValid(payload.oldPassword, user.password as string) === false)
-    throw new AppError(httpStatus.BAD_REQUEST, "old password is incorrect");
-  if (payload.newPassword !== payload.confirmPassword)
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      "new and confirm password is not match ",
+      "This user account is inactive"
     );
-  if (payload.oldPassword === payload.newPassword)
+
+  if (
+    !isPasswordValid(
+      payload.oldPassword,
+      user.password
+    )
+  ) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      "old and new password can't be same ",
+      "Old password is incorrect"
     );
+  }
+
+  if (payload.newPassword !== payload.confirmPassword) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "New and confirm password do not match"
+    );
+  }
+
+  if (payload.oldPassword === payload.newPassword) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Old and new password cannot be same"
+    );
+  }
 
   const passwordHashed = await bcrypt.hash(
     payload.newPassword,
-    config.salt_rounds as number,
+    Number(config.salt_rounds)
   );
+
   const updateUser = await prisma.user.update({
-    where: {
-      id: id,
-    },
+    where: { id },
     data: {
       password: passwordHashed,
+      needToPasswordChange: false,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
     },
   });
-  return {
-    user: updateUser?.name,
-    email: updateUser?.email,
-    id: updateUser?.id,
-  };
+
+  return updateUser;
 };
 
 const forgatePassword = async (payload: { email: string }) => {

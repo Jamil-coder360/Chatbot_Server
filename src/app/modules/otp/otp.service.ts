@@ -80,83 +80,112 @@ const resendOtp = async (payload: { email: string }) => {
   }
 };
 
+
 const verifyOtp = async (token: string, otp: number) => {
   if (!token) {
-    throw new AppError(httpStatus.BAD_REQUEST, "Token is required");
-  }
-  let decodedData: JwtPayload;
-  try {
-    decodedData = jwt.verify(token, config.jwt_secret as string) as JwtPayload;
-  } catch (error: any) {
     throw new AppError(
-      httpStatus?.INTERNAL_SERVER_ERROR,
-      error?.message || "server internal error",
+      httpStatus.BAD_REQUEST,
+      "Token is required",
     );
   }
 
-    const user = await prisma.user.findUnique({
+  let decodedData: JwtPayload;
+
+  try {
+    decodedData = jwt.verify(
+      token,
+      config.jwt_secret as string,
+    ) as JwtPayload;
+  } catch (error: any) {
+    throw new AppError(
+      httpStatus.UNAUTHORIZED,
+      error?.name === "TokenExpiredError"
+        ? "OTP verification token expired. Please request a new OTP."
+        : "Invalid OTP verification token",
+    );
+  }
+
+  const user = await prisma.user.findUnique({
     where: {
-      id: decodedData?.id as string,
+      id: decodedData.id as string,
     },
     include: {
       verification: true,
     },
   });
 
-   if (!user)
+  if (!user) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      "you are not registered with this mail",
+      "You are not registered with this email",
     );
+  }
+
+  if (!user.verification) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Verification record not found",
+    );
+  }
+
+  if (user.verification.status) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Your account is already verified",
+    );
+  }
 
   if (
-    user?.verification?.expiredAt &&
-    moment().utc().isAfter(moment(user?.verification?.expiredAt))
-  )
+    !user.verification.expiredAt ||
+    moment().utc().isAfter(moment(user.verification.expiredAt))
+  ) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       "OTP has expired. Please request a new OTP.",
     );
+  }
 
-  if (user?.verification?.otp !== otp)
+  if (user.verification.otp !== Number(otp)) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       "Invalid OTP. Please try again.",
     );
-     const result = await prisma.user.update({
+  }
+
+  const result = await prisma.user.update({
     where: {
-      id: user?.id,
+      id: user.id,
     },
     data: {
       verification: {
         update: {
-          data: {
-            status: true,
-          },
+          status: true,
         },
       },
-    },
-    include: {
-      verification: true,
     },
   });
 
   const jwtPayload = {
-    id: result?.id,
-    email: result?.email,
-    role: result?.role,
+    id: result.id,
+    email: result.email,
+    role: result.role,
   };
-  const accessToken = jwt.sign(jwtPayload, config.jwt_secret as string, {
-    expiresIn: "1h",
-  });
+
+  const accessToken = jwt.sign(
+    jwtPayload,
+    config.jwt_secret as string,
+    {
+      expiresIn: "1h",
+    },
+  );
 
   return {
-    id: result?.id,
-    email: result?.email,
+    id: result.id,
+    email: result.email,
     accessToken,
   };
-
 };
+
 
 const otpService = {
   resendOtp,
