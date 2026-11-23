@@ -8,7 +8,6 @@ import { generateOTP } from "../../utils/otpGenatator";
 import { sendMail } from "../../utils/mailsender";
 import  path from "path";
 import  fs from "fs";
-
 const resendOtp = async (payload: { email: string }) => {
   try {
     const user = await prisma.user.findFirst({
@@ -61,7 +60,7 @@ const resendOtp = async (payload: { email: string }) => {
 
     const otpEmailPath = path.join(
       __dirname,
-      "../../../public/view/verification.html",
+      "../../../../public/view/verification.html",
     );
 
     await sendMail(

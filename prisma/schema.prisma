@@ -34,7 +34,7 @@ model User {
   role                 Role    @default(USER)
   profile              String?
   location             String?
-  customerId           String? @unique
+  customerId           String?
   phoneNumber          String?
 
   expiredAt DateTime? @default(now())

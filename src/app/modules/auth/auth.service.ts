@@ -203,7 +203,7 @@ const forgatePassword = async (payload: { email: string }) => {
 
   const otpEmailPath = path.join(
     __dirname,
-    "../../../public/view/forgetPass.html",
+    "../../../../public/view/forgetPass.html",
   );
 
   await sendMail(
