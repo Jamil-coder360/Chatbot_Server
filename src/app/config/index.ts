@@ -18,4 +18,7 @@ export const config = {
 
   jwt_access_expires_in: process.env.JWT_ACCESS_EXPIRES_IN || "3d",
   jwt_refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
+
+
+  socket_port: process.env.SOCKET_PORT,
 };
