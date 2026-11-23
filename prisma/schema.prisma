@@ -25,16 +25,17 @@ model Contents {
 }
 
 model User {
-  id          String  @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  email       String  @unique
-  password    String
-  status      Status  @default(ACTIVE)
-  role        Role    @default(USER)
-  profile     String?
-  location    String?
-  customerId  String? @unique
-  phoneNumber String?
+  id                   String  @id @default(auto()) @map("_id") @db.ObjectId
+  name                 String
+  email                String  @unique
+  password             String
+  needToPasswordChange Boolean @default(false)
+  status               Status  @default(ACTIVE)
+  role                 Role    @default(USER)
+  profile              String?
+  location             String?
+  customerId           String? @unique
+  phoneNumber          String?
 
   expiredAt DateTime? @default(now())
   isDeleted Boolean   @default(false)
