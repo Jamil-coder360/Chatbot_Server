@@ -45,6 +45,9 @@ model User {
   verification  Verification?
   notification  Notification[]
   deviceHistory DeviceHistory[]
+  participant  Participant[]
+  sender Message[] @relation("sentMessage")
+  reciver Message[] @relation("reciveMessage")
 }
 
 model DeviceHistory {
@@ -84,6 +87,50 @@ model Notification {
   user User @relation(fields: [userId], references: [id])
 
   @@index([userId])
+}
+
+model Chat{
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId  String @db.ObjectId 
+  status Chat_Status @default(Active)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participant Participant[]
+  messages    Message[]
+}
+
+model Participant{
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  chatId  String @unique @db.ObjectId
+  userId String @db.ObjectId
+
+  chat  Chat @relation(fields: [chatId],references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+}
+
+model Message{
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  chatId String @db.ObjectId
+  text String?
+  imgUrl String?
+  isSeen Boolean @default(false)
+  reciverId String @db.ObjectId
+  senderId  String @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+   chat  Chat @relation(fields: [chatId],references: [id])
+   reciver User @relation("reciveMessage",fields: [reciverId], references: [id])
+   sender User @relation("sentMessage",fields: [senderId], references: [id])
+}
+
+enum Chat_Status {
+  Block
+  Active
+
 }
 
 enum Status {
