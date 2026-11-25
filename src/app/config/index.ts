@@ -14,8 +14,7 @@ export const config = {
   smtp_host:process.env.SMTP_HOST ,
   nodemailer_host_email: process.env.NODEMAILER_HOST_EMAIL,
   nodemailer_host_pass: process.env.NODEMAILER_HOST_PASS,
-  nodemailer_port: process.env.NODEMAILER_PORT || 587,
-
+  nodemailer_port: Number(process.env.SMTP_PORT) || 587,
   jwt_access_expires_in: process.env.JWT_ACCESS_EXPIRES_IN || "3d",
   jwt_refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
 

@@ -101,14 +101,17 @@ model Chat{
   messages    Message[]
 }
 
-model Participant{
-  id   String @id @default(auto()) @map("_id") @db.ObjectId
-  chatId  String @unique @db.ObjectId
+model Participant {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  chatId String @db.ObjectId
   userId String @db.ObjectId
 
-  chat  Chat @relation(fields: [chatId],references: [id])
+  chat Chat @relation(fields: [chatId], references: [id])
   user User @relation(fields: [userId], references: [id])
 
+  @@unique([chatId, userId])
+  @@index([chatId])
+  @@index([userId])
 }
 
 model Message{

@@ -4,6 +4,7 @@ import { otpRouter } from "../modules/otp/otp.route";
 import { authRoutes } from "../modules/auth/auth.route";
 import { notificationRoute } from "../modules/notification/notification.route";
 import { contentRouter } from "../modules/content/content.route";
+import { chatRouter } from "../modules/chat/chat.route";
 
 const router:Router = Router();
 
@@ -26,7 +27,11 @@ const moduleroute = [
   {
     path:"/content",
     route:contentRouter
-  }
+  },
+  {
+  path: "/chats",
+  route: chatRouter,
+}
     
 ];
 
